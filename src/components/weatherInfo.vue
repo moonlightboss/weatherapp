@@ -10,6 +10,7 @@
           @keydown.enter="fetchWeather"
         />
       </div>
+      <button @click="fetchWeather">Search</button>
 
       <div class="weather-wrap" v-if="typeof weather.main != 'undefined'">
         <div class="location-box">
@@ -194,7 +195,7 @@ body {
   /* display: flex;
   justify-content: center;
   align-items: center; */
-  min-height: 65vh;
+  min-height: 90vh;
   transition: background-color 0.4s;
 }
 
