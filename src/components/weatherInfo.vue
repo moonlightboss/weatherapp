@@ -1,5 +1,5 @@
 <template>
-  <div id="app" :class="typeof weather.main != 'undefined' && weather.main.temp > 16 ? 'warm' : ''">
+  <div id="weatherapp" :class="weatherClass">
     <main>
       <div class="search-box">
         <input 
@@ -7,13 +7,15 @@
           class="search-bar" 
           placeholder="Type City Here"
           v-model="query"
-          @keypress="fetchWeather"
+          @keydown.enter="fetchWeather"
         />
       </div>
 
       <div class="weather-wrap" v-if="typeof weather.main != 'undefined'">
         <div class="location-box">
-          <div class="location">{{ weather.name }}, {{ weather.sys.country }}</div>
+          <div class="location">
+            {{ weather.name }}, {{ weather.sys.country }}
+          </div>
           <div class="date">{{ dateBuilder() }}</div>
         </div>
 
@@ -27,124 +29,220 @@
 </template>
 
 <script>
+import api_key from "./config.js";
 export default {
-  name: 'app',
-  data () {
+  name: "WeatherInfo",
+  data() {
     return {
-      api_key: 'KEY HERE',
-      url_base: 'https://api.openweathermap.org/data/2.5/',
-      query: '',
-      weather: {}
-    }
+      url_base: "https://api.openweathermap.org/data/2.5/",
+      query: "",
+      weather: {},
+      classMappings: {
+        Thunderstorm: "thunderstorm",
+        Drizzle: "drizzle",
+        Rain: "rain",
+        Snow: "snow",
+        Mist: "mist",
+        Smoke: "smoke",
+        Haze: "haze",
+        Dust: "dust",
+        Fog: "fog",
+        Sand: "sand",
+        Ash: "ash",
+        Squall: "squall",
+        Tornado: "tornado",
+        Clear: "clear",
+        Clouds: "clouds",
+      },
+    };
   },
   methods: {
-    fetchWeather (e) {
-      if (e.key == "Enter") {
-        fetch(`${this.url_base}weather?q=${this.query}&units=metric&APPID=${this.api_key}`)
-          .then(res => {
-            return res.json();
-          }).then(this.setResults);
-      }
+    fetchWeather() {
+      fetch(
+        `${this.url_base}weather?q=${this.query}&units=metric&APPID=${api_key}`
+      )
+        .then((res) => {
+          return res.json();
+        })
+        .then(this.setResults);
     },
-    setResults (results) {
+    setResults(results) {
       this.weather = results;
+      const weatherMain = this.weather?.weather?.[0]?.main;
+      this.weatherClass = this.classMappings[weatherMain] || "";
     },
-    dateBuilder () {
+
+    dateBuilder() {
       let d = new Date();
-      let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      let months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      let days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
       let day = days[d.getDay()];
       let date = d.getDate();
       let month = months[d.getMonth()];
       let year = d.getFullYear();
       return `${day} ${date} ${month} ${year}`;
-    }
-  }
-}
+    },
+  },
+  computed: {
+    weatherClass() {
+      const weatherMain = this.weather?.weather?.[0]?.main;
+
+      if (typeof weatherMain === "undefined") {
+        return "none"; // Если нет данных о погоде, не добавлять класс
+      } else {
+        const mappedClass = this.classMappings[weatherMain];
+        return mappedClass ? mappedClass : "";
+      }
+    },
+  },
+};
 </script>
 
-<style>
+<style scoped>
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
+
 body {
-  font-family: 'montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
+  background-color: #f5f5f5;
 }
-#app {
-  background-image: url('../assets/cloudy\ sun.svg');
+.thunderstorm {
+  background-image: url("@/assets/thinderstorm.webp");
   background-size: cover;
-  background-position: bottom;
-  transition: 0.4s;
 }
-#app.warm {
-  background-image: url('../assets/rain.svg');
+.drizzle {
+  background-image: url("@/assets/Drizzle.webp");
+  background-size: cover;
 }
-main {
-  min-height: 100vh;
-  padding: 25px;
-  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.75));
+.rain {
+  background-image: url("@/assets/rain.webp");
+  background-size: cover;
 }
-.search-box {
-  width: 100%;
-  margin-bottom: 30px;
+.snow {
+  background-image: url("@/assets/snow.webp");
+  background-size: cover;
 }
-.search-box .search-bar {
-  display: block;
-  width: 100%;
-  padding: 15px;
-  
-  color: #313131;
-  font-size: 20px;
-  appearance: none;
-  border:none;
-  outline: none;
-  background: none;
-  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.25);
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 0px 16px 0px 16px;
-  transition: 0.4s;
+.mist {
+  background-image: url("@/assets/mist.webp");
+  background-size: cover;
 }
-.search-box .search-bar:focus {
-  box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.25);
-  background-color: rgba(255, 255, 255, 0.75);
-  border-radius: 16px 0px 16px 0px;
+.smoke {
+  background-image: url("@/assets/smoke.webp");
+  background-size: cover;
 }
-.location-box .location {
-  color: #FFF;
-  font-size: 32px;
+.haze {
+  background-image: url("@/assets/Haze.webp");
+  background-size: cover;
+}
+.dust {
+  background-image: url("@/assets/Dust.webp");
+  background-size: cover;
+}
+.fog {
+  background-image: url("@/assets/Fog.webp");
+  background-size: cover;
+}
+.sand {
+  background-image: url("@/assets/Sand.webp");
+  background-size: cover;
+}
+.ash {
+  background-image: url("@/assets/Ash.webp");
+  background-size: cover;
+}
+.squall {
+  background-image: url("@/assets/Squall.webp");
+  background-size: cover;
+}
+.tornado {
+  background-image: url("@/assets/Tornado.webp");
+  background-size: cover;
+}
+.clear {
+  background-image: url("@/assets/Clear.webp");
+  background-size: cover;
+}
+.clouds {
+  background-image: url("@/assets/Clouds.webp");
+  background-size: cover;
+}
+#weatherapp {
+  /* display: flex;
+  justify-content: center;
+  align-items: center; */
+  min-height: 65vh;
+  transition: background-color 0.4s;
+}
+
+#weatherapp.warm {
+  background-color: #ffcc66;
+}
+
+.weather-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.location-box {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.location {
+  font-size: 24px;
   font-weight: 500;
-  text-align: center;
-  text-shadow: 1px 3px rgba(0, 0, 0, 0.25);
+  color: #333;
 }
-.location-box .date {
-  color: #FFF;
-  font-size: 20px;
+
+.date {
+  font-size: 16px;
   font-weight: 300;
-  font-style: italic;
-  text-align: center;
+  color: #666;
 }
+
 .weather-box {
   text-align: center;
+  margin-top: 20px;
 }
-.weather-box .temp {
-  display: inline-block;
-  padding: 10px 25px;
-  color: #FFF;
-  font-size: 102px;
-  font-weight: 900;
-  text-shadow: 3px 6px rgba(0, 0, 0, 0.25);
-  background-color:rgba(255, 255, 255, 0.25);
-  border-radius: 16px;
-  margin: 30px 0px;
-  box-shadow: 3px 6px rgba(0, 0, 0, 0.25);
-}
-.weather-box .weather {
-  color: #FFF;
-  font-size: 48px;
+
+.temp {
+  font-size: 72px;
   font-weight: 700;
-  font-style: italic;
-  text-shadow: 3px 6px rgba(0, 0, 0, 0.25);
+  color: #333;
+}
+
+.weather {
+  font-size: 24px;
+  font-weight: 500;
+  color: #555;
 }
 </style>
